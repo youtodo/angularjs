@@ -1,0 +1,413 @@
+var express = require('express');
+var path = require('path');
+var mongoose = require('mongoose');
+var bodyParser = require('body-parser');
+var moment = require('moment');
+moment().format();
+moment.locale('ru');
+
+var app = express();
+
+//указываем директории со статичными файлами (чтобы можно было обращаться к ним, не казывая путь, а просто по имени)
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'js')));
+app.use(express.static(path.join(__dirname, 'views')));
+
+app.use(bodyParser.json());                         // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+
+var pdkSchema = mongoose.Schema({
+    gas             : String,
+    hazardClass     : Number,
+    pdkMaxSingle    : Number,
+    pdkAvDaily      : Number
+});
+pdkSchema.methods.print = function () {
+    console.log(
+        'Газ: '+ this.gas +
+        '; Класс опасности: ' + this.hazardClass +
+        '; ПДК max разовая: ' + this.pdkMaxSingle +
+        '; ПДК среднесуточная: ' + this.pdkAvDaily);
+};
+var Pdk = mongoose.model('Pdk', pdkSchema);
+
+var meteringSchema = mongoose.Schema({
+    date        : String,
+    time        : Date,
+    employee    : String,
+    values      : []
+
+});
+meteringSchema.methods.print = function () {
+    console.log(
+        'Дата замера: '+ this.date +
+        '; ответственное лицо: ' + this.employee);
+    console.log('Составлющие:');
+    console.log(this.values);
+};
+var Metering = mongoose.model('Metering', meteringSchema);
+
+//массивы начальных данных
+var pdkInitData = [
+    {
+        gas: 'Бенз(а)пирен',
+        hazardClass: 1,
+        pdkMaxSingle: 0.16,
+        pdkAvDaily: 0.1
+    },
+    {
+        gas: 'Диоксины',
+        hazardClass: 1,
+        pdkMaxSingle: 0.001,
+        pdkAvDaily: 0.5
+    },
+    {
+        gas: 'Кадмия оксид',
+        hazardClass: 1,
+        pdkMaxSingle: 0.085,
+        pdkAvDaily: 0.0003
+    },
+    {
+        gas: 'Озон',
+        hazardClass: 1,
+        pdkMaxSingle: 0.3,
+        pdkAvDaily: 0.03
+    },
+    {
+        gas: 'Ртуть',
+        hazardClass: 1,
+        pdkMaxSingle: 0.01,
+        pdkAvDaily: 0.0003
+    },
+    {
+        gas: 'Свинец',
+        hazardClass: 2,
+        pdkMaxSingle: 0.1,
+        pdkAvDaily: 0.0003
+    },
+    {
+        gas: 'Азота диоксид',
+        hazardClass: 2,
+        pdkMaxSingle: 0.01,
+        pdkAvDaily: 0.04
+    },
+    {
+        gas: 'Бензол',
+        hazardClass: 1,
+        pdkMaxSingle: 0.5,
+        pdkAvDaily: 0.1
+    },
+    {
+        gas: 'Железа трихлорид',
+        hazardClass: 2,
+        pdkMaxSingle: 0.4,
+        pdkAvDaily: 0.04
+    },
+    {
+        gas: 'Кобальт',
+        hazardClass: 2,
+        pdkMaxSingle: 0.2,
+        pdkAvDaily: 0.0004
+    },
+    {
+        gas: 'Марганец',
+        hazardClass: 1,
+        pdkMaxSingle: 2.0,
+        pdkAvDaily: 0.001
+    },
+    {
+        gas: 'Меди оксид',
+        hazardClass: 2,
+        pdkMaxSingle: 5.0,
+        pdkAvDaily: 0.002
+    },
+    {
+        gas: 'Формальдегид',
+        hazardClass: 3,
+        pdkMaxSingle: 1.4,
+        pdkAvDaily: 0.03
+    },
+    {
+        gas: 'Хлор',
+        hazardClass: 3,
+        pdkMaxSingle: 0.1,
+        pdkAvDaily: 0.03
+    },
+    {
+        gas: 'Ацетальдегид',
+        hazardClass: 3,
+        pdkMaxSingle: 0.01,
+        pdkAvDaily: 0.15
+    },
+    {
+        gas: 'Магния оксид',
+        hazardClass: 3,
+        pdkMaxSingle: 0.4,
+        pdkAvDaily: 0.05
+    },    {
+        gas: 'Олова диоксид',
+        hazardClass: 3,
+        pdkMaxSingle: 0.05,
+        pdkAvDaily: 0.05
+    },
+    {
+        gas: 'Аммиак',
+        hazardClass: 4,
+        pdkMaxSingle: 0.02,
+        pdkAvDaily: 0.04
+    },
+    {
+        gas: 'Оксид углерода',
+        hazardClass: 4,
+        pdkMaxSingle: 5,
+        pdkAvDaily: 3
+    }
+];
+
+var meteringInitData = [
+    {
+        date: moment().format(),
+        employee: 'Лапин Виталий Антонович'
+    },
+    {
+        date: moment().format(),
+        employee: 'Кошелев Егор Максимович'
+    },
+    {
+        date: moment().format(),
+        employee: 'Власов Ростислав Георгиевич'
+    }
+];
+
+function removeAllData(model) {
+    model.find({}).remove().exec();
+}
+
+function printAllData(model) {
+    model.find(function (err, data) {
+        if (err) return console.error(err);
+        for (var i in data) {
+            data[i].print();
+        }
+    });
+}
+
+function fillModel(model,data) {
+    removeAllData(model);
+    for (var i in data) {
+        new model(data[i]).save(
+            function(err) {
+                if (err) return console.error(err);
+            }
+        )
+    }
+}
+
+//обновляет замер, добавляет отсутствующие газы со значением 0
+function updateMeter(doc,cb) {
+    Pdk.find({},function(err,pdks) {
+        for (var i in pdks) {
+            var needAdd = true;
+            for (var j in doc.values) {
+                if (doc.values[j] && doc.values[j].gas === pdks[i].gas) {
+                    needAdd = false;
+                }
+            }
+            if (needAdd) {
+                // если данные из пдк
+                // doc.values.push({
+                //     gas:pdks[i].gas,
+                //     val:pdks[i].pdkAvDaily
+                // });
+
+                //если поставить 0
+                doc.values.push({
+                    gas:pdks[i].gas,
+                    val:0
+                });
+            }
+        }
+        doc.save(
+            function(err) {
+                if (err) return console.error(err);
+                if (typeof cb == "function") {
+                    cb(doc);
+                }
+            }
+        );
+
+    })
+}
+
+//стартуем сервер
+app.listen(8000, function () {
+    console.log('GasManager слушает порт 8000!');
+    //настраиваем базу данных
+    mongoose.connect('mongodb://localhost/gasmanager6');
+    //откываем подключение
+    var db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'connection error:'));
+    db.once('open', function() {
+        console.log('Подключение к базе успешно установлено.');
+        fillModel(Pdk,pdkInitData);
+    });
+});
+
+//главная страница
+app.use(function (req, res, next) {
+    if (req.url == '/') {
+        res.sendFile(__dirname + '/views/index.html');
+    } else {
+        next();
+    }
+});
+
+app.get('/get_all_pdk', function (req, res) {
+    Pdk.find({},function(err,docs) {
+        res.send(docs);
+    })
+});
+
+app.post('/add_pdk', function (req, res) {
+    new Pdk(req.body).save(
+        function(err) {
+            if (err) return console.error(err);
+        }
+    );
+    res.sendStatus(200);
+});
+
+app.put('/edit_pdk', function (req, res) {
+    Pdk.findOne({_id:req.body._id},function(err,doc) {
+        doc.gas = req.body.gas;
+        doc.hazardClass = req.body.hazardClass;
+        doc.pdkMaxSingle = req.body.pdkMaxSingle;
+        doc.pdkAvDaily = req.body.pdkAvDaily;
+        doc.save(
+            function(err) {
+                if (err) return console.error(err);
+                res.sendStatus(200);
+            }
+        )
+    });
+});
+
+app.post('/del_pdk', function (req, res) {
+    Pdk.find({_id:req.body._id}).remove(() => {
+        res.sendStatus(200);
+    })
+});
+
+app.get('/get_all_metering', function (req, res) {
+    Metering.find({}).sort('date').sort('time').exec(function (err, docs) {
+        res.send(docs);
+    })
+});
+
+app.get('/get_meter/:id', function (req, res) {
+    Metering.findOne({_id:req.params.id},function(err,doc) {
+        updateMeter(doc, function (doc) {
+            res.send(doc);
+        })
+    })
+});
+
+app.post('/add_metering', function (req, res) {
+    var initGasValues = [];
+    Pdk.find({},function(err,pdks) {
+        for (var i in pdks) {
+            initGasValues.push({
+                gas:pdks[i].gas,
+                val:0
+            });
+        }
+        new Metering({
+            date        : req.body.date,
+            time        : new Date(new moment()),
+            employee    : req.body.employee,
+            values      : initGasValues
+        }).save(
+            function(err,item) {
+                if (err) return console.error(err);
+                item.print();
+                res.sendStatus(200);
+            }
+        );
+    });
+
+    // new Metering({
+    //     date        : new Date(new moment(req.body.date,'DD.MM.YYYY')),
+    //     employee    : req.body.employee
+    // }).save(
+    //     function(err,item) {
+    //         if (err) return console.error(err);
+    //         item.print();
+    //     }
+    // );
+    // res.sendStatus(200);
+});
+
+app.post('/add_metering_item', function (req, res) {
+    Metering.findOne({_id:req.body.id},function(err,doc) {
+        doc.values.push({
+            gas:req.body.gas,
+            val:req.body.val
+        });
+        doc.save(
+            function(err) {
+                if (err) return console.error(err);
+                res.sendStatus(200);
+            }
+        )
+    })
+});
+
+app.put('/edit_metering_item_value', function (req, res) {
+    Metering.findOne({_id:req.body.id},function(err,doc) {
+        doc.values.set(req.body.index,{
+            gas     : req.body.item.gas,
+            val     : req.body.item.val,
+            changed : true
+        });
+        doc.save(
+            function(err) {
+                if (err) {
+                    res.sendStatus(400);
+                    return console.error(err);
+                }
+                doc.print();
+                res.sendStatus(200);
+            }
+        )
+    })
+});
+
+app.post('/delete_metering_item_value', function (req, res) {
+    Metering.findOne({_id:req.body.id},function(err,doc) {
+        doc.values.splice(req.body.index,1);
+        doc.save(
+            function(err) {
+                if (err) {
+                    res.sendStatus(400);
+                    return console.error(err);
+                }
+                doc.print();
+                res.sendStatus(200);
+            }
+        )
+    })
+});
+
+//если поступает запрос на запрещенный для юзера адрес
+app.use(function (req, res, next) {
+    if (req.url == '/forbidden') {
+        res.sendStatus(401); // извини, досвидания
+    } else {
+        next();
+    }
+});
+
+//заглушка, теперь все левые запросы будут переадресовываться на гравную страницу
+app.use(function (req, res) {
+    res.sendFile(__dirname + '/views/index.html');
+});

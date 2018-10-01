@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<!-- Yandex.Metrika counter -->
+	<!-- Google Analytics counter -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+	<meta charset="utf-8">	
+	<title>TestAngular</title>
+	<meta name="keywords" content="Долет Бижев, персональная страница">
+	<meta name="description" content="О Долете вы можете прочесть тут, его контакты, посмотреть его личные фотографии, видео и т.д.">	
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<meta name="author" content="Долет Бижев">
+	<meta name="copyright" content="Все права принадлежат Долету Бижеву">
+	<meta name="robots" content="noindex, nofollow">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../bower_components/angular-material/angular-material.css">
+	<link rel="stylesheet" href="lib/style.css">
+	<base href="/">
+</head>
+<body ng-app="myApp" ng-controller="mainController" layout="row" ng-cloak>	
+	<div>
+		<div layout="column" flex>
+			<h2>Test task's (Angular Material + ExpresJS)</h2>
+			<div layout="row" layout-align="start">
+				<md-button ui-sref="task1" class="md-raised"><md-icon md-svg-src="img/icons/calendar.svg"></md-icon> Задание №1</md-button>
+			</div>
+			<div layout="row" layout-align="start">
+				<md-button ui-sref="task2" class="md-raised"><md-icon md-svg-src="img/icons/calendar.svg"></md-icon> Задание №2</md-button>
+			</div>
+			<div layout="row" layout-align="start">
+				<md-button ui-sref="task3" class="md-raised"><md-icon md-svg-src="img/icons/calendar.svg"></md-icon> Задание №3</md-button>
+			</div>
+
+		</div>
+		<div layout="column" flex="50">
+			
+
+		</div>
+		<hr/>
+		<div layout="column" flex>
+			
+			<md-content flex layout-padding>
+				<h3 class="md-flex"> {{page.h1}}</h3>
+				<div ui-view>
+					
+				</div>
+			</md-content>
+		</div>
+	</div>
+
+
+
+	</md-content>
+	<script src="/bower_components/angular/angular.js"></script>
+	<script src="/bower_components/angular-animate/angular-animate.js"></script>
+	<script src="/bower_components/angular-aria/angular-aria.js"></script>
+	<script src="/bower_components/angular-material/angular-material.js"></script>
+	<script src="/bower_components/angular-messages/angular-messages.js"></script>
+	<script src="/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+	<script src="/lib/comon.js"></script>
+	<script src="/controllers/task1.controller.js"></script>
+	<script src="/controllers/task2.controller.js"></script>
+	<script src="/controllers/task3.controller.js"></script>
+	<script src="/routes.js"></script>
+	
+	</body>
+</html>

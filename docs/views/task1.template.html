@@ -1,0 +1,12 @@
+<div ng-controller="task1Controller">
+	<ul>
+		<li ng-repeat="group in groups">
+			<label><input ng-model="group.name"> </label>
+			<button ng-click="groups.splice($index, 1)" aria-label="Remove">X</button>
+		</li>
+		<li>
+			<label><input md-placeholder="add new todo here" ng-model="groupItems.add"> </label>
+			<md-button class="md-raised md-primary" ng-click="addGroup(groupItems)">add</md-button>
+		</li>
+	</ul>
+</div>

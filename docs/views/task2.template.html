@@ -1,0 +1,28 @@
+<div ng-controller="task2Controller">
+	<ul>
+		<li ng-repeat="group in groups">
+      <label><md-checkbox ng-model="group.done" aria-label="Custom checkbox"></md-checkbox></label>
+			<label><input ng-model="group.name"> </label>
+			<button ng-click="groups.splice($index, 1)" aria-label="Remove">X</button>
+
+				<ul>
+					<li ng-repeat="task in group.tasks">
+			      <label><md-checkbox ng-model="task.done" aria-label="Custom checkbox"></md-checkbox></label>
+						<label><input ng-model="task.name"></label>
+						<button ng-click="group.tasks.splice($index, 1)" aria-label="Remove">X</button>
+					</li>	
+
+					<li>
+						<label><input ng-model="task.$$hashKey"></label>
+						<md-button class="md-raised md-primary" ng-click="addTask(group,task.$$hashKey)">add task</md-button>
+					</li>
+				</ul>
+
+		</li>
+		<li>
+			<label><input ng-model="newGroup"> </label>
+			<md-button class="md-raised md-primary" ng-click="addGroup(group,newGroup)">add group</md-button>
+		</li>
+	</ul>
+
+</div>

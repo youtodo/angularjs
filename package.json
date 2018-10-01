@@ -1,0 +1,30 @@
+{
+  "name": "angularjs",
+  "version": "1.0.0",
+  "description": "```sh\r $ git clone https://github.com/Bizhev/testAngular.git app-name\r $ cd app-name\r $ npm start\r ```\r ## Development\r   * Point your browser to http://localhost:3000/, page hot reloads automatically when there are changes",
+  "main": "site.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd ./docs/ &&bower i &&cd .. &&npm i &&nodemon site.js "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bizhev/testAngular.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bizhev/testAngular/issues"
+  },
+  "homepage": "https://github.com/Bizhev/testAngular#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "moment": "^2.14.1",
+    "mongoose": "^4.5.9"
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "devDependencies": {}
+}
